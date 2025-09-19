@@ -1,5 +1,5 @@
 {
-  description = "m4adown - YouTube M4A downloader (yt-dlp + Tkinter)";
+  description = "m4adown - YouTube M4A downloader";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -22,7 +22,7 @@
 
           propagatedBuildInputs = with pythonPkgs; [
             yt-dlp
-            tkinter   # <---- kritik satır, artık tkinter burada
+            tkinter 
           ] ++ [
             pkgs.ffmpeg
           ];
@@ -36,7 +36,7 @@
           '';
 
           meta = with pkgs.lib; {
-            description = "m4adown - YouTube M4A downloader (yt-dlp + Tkinter)";
+            description = "m4adown - YouTube M4A downloader";
             license = licenses.mit;
             platforms = platforms.linux;
           };
