@@ -1,68 +1,119 @@
 #!/usr/bin/env python3
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 import subprocess
-import tkinter as tk
-from tkinter import messagebox, filedialog
 import os
 
 download_dir = os.path.expanduser("~/Music")
 
-def choose_directory():
-    global download_dir
-    folder = filedialog.askdirectory()
-    if folder:
-        download_dir = folder
-        folder_label.config(text=f"Selected folder: {download_dir}")
+class Downloader(Gtk.Window):
+    def __init__(self):
+        super().__init__(title="You Music Downloader")
+        self.set_default_size(500, 200)
 
-def download_audio(format_type):
-    url = url_entry.get()
-    if not url:
-        messagebox.showerror("Error", "Please enter a YouTube link.")
-        return
+        self.url_entry = Gtk.Entry()
+        self.url_entry.set_placeholder_text("YouTube link...")
 
-    outtmpl = os.path.join(download_dir, "%(title)s.%(ext)s")
+        # Layout
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        vbox.set_margin_top(10)
+        vbox.set_margin_bottom(10)
+        vbox.set_margin_start(10)
+        vbox.set_margin_end(10)
+        self.add(vbox)
 
-    command = [
-        "yt-dlp",
-        "--extract-audio",
-        "--audio-format", format_type,
-        "--audio-quality", "192K",
-        "--embed-metadata",
-        "--embed-thumbnail",
-        "--add-metadata",
-        "-o", outtmpl,
-        url
-    ]
+        # URL label
+        label_url = Gtk.Label(label="YouTube Link:")
+        label_url.set_xalign(0)
+        vbox.pack_start(label_url, False, False, 0)
+        vbox.pack_start(self.url_entry, False, False, 0)
 
-    try:
-        subprocess.run(command, check=True)
-        messagebox.showinfo("Successful", f"Download completed!\n{download_dir}")
-    except subprocess.CalledProcessError:
-        messagebox.showerror("Error", "There was a problem during the download.")
+        folder_button = Gtk.Button(label="Select folder")
+        folder_button.connect("clicked", self.choose_directory)
+        vbox.pack_start(folder_button, False, False, 0)
 
-# ---------------- GUI ----------------
-root = tk.Tk()
-root.title("You Music Downloader")
-root.geometry("500x220")
+        # Folder label
+        self.folder_label = Gtk.Label(label=f"Selected folder: {download_dir}")
+        self.folder_label.set_xalign(0)
+        vbox.pack_start(self.folder_label, False, False, 0)
 
-tk.Label(root, text="YouTube Link:").pack(pady=5)
-url_entry = tk.Entry(root, width=50)
-url_entry.pack(pady=5)
+        # Buttons
+        hbox = Gtk.Box(spacing=10)
+        hbox.pack_start(Gtk.Label(label="Download as:"), False, False, 0)
 
-folder_button = tk.Button(root, text="Select folder", command=choose_directory)
-folder_button.pack(pady=5)
+        m4a_button = Gtk.Button(label="M4A")
+        m4a_button.connect("clicked", lambda w: self.download_audio("m4a"))
+        hbox.pack_start(m4a_button, False, False, 0)
 
-folder_label = tk.Label(root, text=f"Selected folder: {download_dir}")
-folder_label.pack(pady=5)
+        mp3_button = Gtk.Button(label="MP3")
+        mp3_button.connect("clicked", lambda w: self.download_audio("mp3"))
+        hbox.pack_start(mp3_button, False, False, 0)
 
-buttons_frame = tk.Frame(root)
-buttons_frame.pack(pady=5)
+        vbox.pack_start(hbox, False, False, 0)
 
-tk.Label(buttons_frame, text="Download as:").pack(side="left", padx=5)
+    def choose_directory(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Select folder",
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK
+        )
 
-m4a_button = tk.Button(buttons_frame, text="M4A", width=10, command=lambda: download_audio("m4a"))
-m4a_button.pack(side="left", padx=5)
+        if dialog.run() == Gtk.ResponseType.OK:
+            global download_dir
+            download_dir = dialog.get_filename()
+            self.folder_label.set_text(f"Selected folder: {download_dir}")
 
-mp3_button = tk.Button(buttons_frame, text="MP3", width=10, command=lambda: download_audio("mp3"))
-mp3_button.pack(side="left", padx=5)
+        dialog.destroy()
 
-root.mainloop()
+    def download_audio(self, format_type):
+        url = self.url_entry.get_text().strip()
+        if not url:
+            self.show_message("Error", "Please enter a YouTube link.")
+            return
+
+        outtmpl = os.path.join(download_dir, "%(title)s.%(ext)s")
+
+        command = [
+            "yt-dlp",
+            "--extract-audio",
+            "--audio-format", format_type,
+            "--audio-quality", "192K",
+            "--embed-metadata",
+            "--embed-thumbnail",
+            "--add-metadata",
+            "-o", outtmpl,
+            url
+        ]
+
+        try:
+            subprocess.run(command, check=True)
+            self.show_message("Successful", f"Download completed!\n{download_dir}")
+        except subprocess.CalledProcessError:
+            self.show_message("Error", "There was a problem during the download.")
+
+    def show_message(self, title, message):
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.INFO if title == "Successful" else Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=title,
+        )
+        dialog.format_secondary_text(message)
+        dialog.run()
+        dialog.destroy()
+
+
+def main():
+    win = Downloader()
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
+
+if __name__ == "__main__":
+    main()
