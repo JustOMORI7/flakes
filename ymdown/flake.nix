@@ -20,11 +20,17 @@
           src = ./.;
           format = "other";
 
+          nativeBuildInputs = with pkgs; [
+            wrapGAppsHook
+            gobject-introspection
+          ];
+
           propagatedBuildInputs = with pythonPkgs; [
             yt-dlp
-            tkinter 
+            pygobject3
           ] ++ [
             pkgs.ffmpeg
+	    pkgs.gtk3
           ];
 
           installPhase = ''
