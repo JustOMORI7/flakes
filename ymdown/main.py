@@ -110,9 +110,13 @@ class Downloader(Gtk.ApplicationWindow):
             buttons=Gtk.ButtonsType.OK,
             text=title,
         )
-        dialog.format_secondary_text(message)
-        dialog.show()
+
+        if message:
+            dialog.set_markup(f"<b>{title}</b>\n\n{message}")
+
         dialog.connect("response", lambda d, r: d.destroy())
+        dialog.show()
+
 
 
 class DownloaderApp(Gtk.Application):
