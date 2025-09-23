@@ -21,7 +21,7 @@
           format = "other";
 
           nativeBuildInputs = with pkgs; [
-            wrapGAppsHook
+            wrapGAppsHook4
             gobject-introspection
           ];
 
@@ -30,7 +30,7 @@
             pygobject3
           ] ++ [
             pkgs.ffmpeg
-	    pkgs.gtk3
+	    pkgs.gtk4
           ];
 
           installPhase = ''
