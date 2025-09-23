@@ -63,12 +63,18 @@ class Downloader(Gtk.ApplicationWindow):
             cancel_label="Cancel"
         )
 
-        response = dialog.run()
-        if response == Gtk.ResponseType.ACCEPT:
-            global download_dir
-            download_dir = dialog.get_file().get_path()
-            self.folder_label.set_text(f"Selected folder: {download_dir}")
-        dialog.destroy()
+        def on_response(dlg, response):
+            if response == Gtk.ResponseType.ACCEPT:
+                global download_dir
+                file = dlg.get_file()
+                if file:
+                    download_dir = file.get_path()
+                    self.folder_label.set_text(f"Selected folder: {download_dir}")
+            dlg.destroy()
+
+        dialog.connect("response", on_response)
+        dialog.show()
+
 
     def download_audio(self, format_type):
         url = self.url_entry.get_text().strip()
