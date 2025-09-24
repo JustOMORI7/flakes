@@ -15,13 +15,13 @@
       in {
         packages.ymdown = pythonPkgs.buildPythonApplication {
           pname = "ymdown";
-          version = "0.1.0";
+          version = "1.0.0";
 
           src = ./.;
           format = "other";
 
           nativeBuildInputs = with pkgs; [
-            wrapGAppsHook4
+            wrapGAppsHook
             gobject-introspection
           ];
 
@@ -30,7 +30,7 @@
             pygobject3
           ] ++ [
             pkgs.ffmpeg
-	    pkgs.gtk4
+	        pkgs.gtk3
           ];
 
           installPhase = ''
