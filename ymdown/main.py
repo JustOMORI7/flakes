@@ -88,7 +88,7 @@ class Downloader(Gtk.Window):
             "--add-metadata",
             "-o", outtmpl,
             url,
-            "--extractor-args" 'youtube:player-client=default,-tv_simply'"
+            "--extractor-args" "youtube:player-client=default,-tv_simply"
         ]
 
         try:
